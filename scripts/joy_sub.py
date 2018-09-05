@@ -10,7 +10,7 @@ from sensor_msgs.msg import Joy
 def VectProduct(a,b):
     return Vector3((a.y * b.z) - (a.z * b.y),
                    (a.z * b.x) - (a.x * b.z),
-                   (a.x * b.y) - (a.y * b.x))   
+                   (a.x * b.y) - (a.y * b.x))
 
 # def VectScaling3(a,b,c):
 #     x=a.x*b*c
@@ -25,28 +25,27 @@ def VectScaling(a,b):
     return Vector3(x,y,z)
 
 def VectSum6(a,b,c,d,e,f):
-    return Vector3(a.x+ b.x+ c.x+ d.x+ e.x+ f.x, 
+    return Vector3(a.x+ b.x+ c.x+ d.x+ e.x+ f.x,
                    a.y+ b.y+ c.y+ d.y+ e.y+ f.y,
                    a.z+ b.z+ c.z+ d.z+ e.z+ f.z)
 
 # def VectSum3(a,b,c):
-#     return Vector3(a.x+ b.x + c.x, 
+#     return Vector3(a.x+ b.x + c.x,
 #                    a.y+ b.y + c.y,
 #                    a.z+ b.z + c.z)
 
 def VectSum2(a,b):
-    return Vector3(a.x+ b.x , 
+    return Vector3(a.x+ b.x ,
                    a.y+ b.y ,
                    a.z+ b.z )
 
 def SumForce(msg1):
 
-    
     b=msg1.axes
 
     # initialize node
     rospy.init_node('PFD', anonymous = True)
-    #### Setup MouseToJoy Publisher 
+    #### Setup MouseToJoy Publisher
     PFDPublisher = rospy.Publisher("PFD", Wrench, queue_size = 1)
     rate = rospy.Rate(25) # 25hz
     msg = Wrench()
@@ -69,12 +68,12 @@ def SumForce(msg1):
     M4 = Vector3(-0.5, 0.08, -0.04625)
     M5 = Vector3(-0.5,    0,  0.04625)
     M6 = Vector3(-0.5,-0.08, -0.04625)
-        
+
     #Moteur 1
     Fmot1   = Vector3(20,0,0)
-    force1  = VectScaling(Fmot1, b[2])           
+    force1  = VectScaling(Fmot1, b[2])
     torque1 = VectProduct(M1, force1)
-        
+
     #Moteur 2
     Fmot2   = Vector3(20,0,0)
     force2  = VectScaling(Fmot2, b[2])
@@ -87,7 +86,7 @@ def SumForce(msg1):
 
     #Moteur 4
     Fmot4   = VectScaling(Vector3( 0, -np.cos(angle), np.sin(angle)),0)
-    force4  = VectScaling(Fmot4, b[3]) 
+    force4  = VectScaling(Fmot4, b[3])
     torque4 = VectProduct(M4, force4)
 
     #Moteur 5
@@ -96,13 +95,13 @@ def SumForce(msg1):
     torque5 = VectProduct(M5, force5)
 
     Fmot6   = VectScaling(Vector3( 0,  np.cos(angle), np.sin(angle)),0)
-    force6  = VectScaling(Fmot6, b[3]) 
+    force6  = VectScaling(Fmot6, b[3])
     torque6 = VectProduct(M6, force6)
-    
+
     if(b[3]<0):
         #Moteur 4
         Fmot4   = VectScaling(Vector3( 0, -np.cos(angle), np.sin(angle)),10)
-        force4  = VectScaling(Fmot4, -b[3]) 
+        force4  = VectScaling(Fmot4, -b[3])
         torque4 = VectProduct(M4, force4)
 
         Fmot5   = Vector3(0,0,-5)
@@ -112,7 +111,7 @@ def SumForce(msg1):
     if (b[3]>0):
         #Moteur 6
         Fmot6   = VectScaling(Vector3( 0,  np.cos(angle), np.sin(angle)),10)
-        force6  = VectScaling(Fmot6, b[3]) 
+        force6  = VectScaling(Fmot6, b[3])
         torque6 = VectProduct(M6, force6)
 
         Fmot5   = Vector3(0,0,-5)
@@ -122,18 +121,18 @@ def SumForce(msg1):
     if(b[1]<0):
         #Moteur 4
         Fmot4   = VectScaling(Vector3( 0, -np.cos(angle), np.sin(angle)),10)
-        force4  = VectScaling(Fmot4, -b[1]) 
+        force4  = VectScaling(Fmot4, -b[1])
         torque4 = VectProduct(M4, force4)
 
         Fmot6   = VectScaling(Vector3( 0,  np.cos(angle), np.sin(angle)),10)
-        force6  = VectScaling(Fmot6, -b[1]) 
+        force6  = VectScaling(Fmot6, -b[1])
         torque6 = VectProduct(M6, force6)
 
 
-    
+
     msg.force=VectSum6(force1,force2,force3,force4,force5,force6)
-    msg.torque=VectSum6(torque1,torque2,torque3,torque4,torque5,torque6)   
-    
+    msg.torque=VectSum6(torque1,torque2,torque3,torque4,torque5,torque6)
+
     #msg.force=VectSum3(force1,force2,force3)
     #msg.torque=VectSum3(torque1,torque2,torque3)
     '''
@@ -163,8 +162,8 @@ def SumForce(msg1):
     rospy.loginfo(force6)
     rospy.loginfo("M6")
     rospy.loginfo(torque6)
-    '''   
-    
+    '''
+
     PFDPublisher.publish(msg)
     rate.sleep()
 
@@ -172,7 +171,7 @@ def callback(msg):
     SumForce(msg)
 
 
-    
+
 def listener():
 
     # In ROS, nodes are uniquely named. If two nodes with the same
