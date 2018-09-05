@@ -6,7 +6,7 @@
 
 import rospy
 import numpy as np
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray, Bool, Float32, MultiArrayDimension
 import tf
 
@@ -33,12 +33,12 @@ class ImmFollow():
 
     def updatePose(self, msg):
         # update values
-        self.z = msg.position.z
+        self.z = msg.pose.position.z
         quaternion = (
-            msg.orientation.x,
-            msg.orientation.y,
-            msg.orientation.z,
-            msg.orientation.w)
+            msg.pose.orientation.x,
+            msg.pose.orientation.y,
+            msg.pose.orientation.z,
+            msg.pose.orientation.w)
         euler = tf.transformations.euler_from_quaternion(quaternion)
         self.pitch = euler[1]
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     algo = ImmFollow()
 
     pub_wrench = rospy.Publisher("cmd_mot", Float32MultiArray, queue_size=1)
-    sub_pose = rospy.Subscriber("pose", Pose, algo.updatePose)
+    sub_pose = rospy.Subscriber("pose", PoseStamped, algo.updatePose)
     sub_target = rospy.Subscriber("imm_target", Float32, algo.updateTarget)
     sub_enable = rospy.Subscriber("enable", Bool, algo.switch)
 
