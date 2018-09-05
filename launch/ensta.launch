@@ -1,0 +1,15 @@
+<launch>
+
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+		<param name="port" value="9090"/>
+	</include>
+	
+	<node name="joy" pkg="joy" type="joy_node" output="screen">
+		<param  name="/dev" value="/dev/input/js2"/>
+	</node>
+
+	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
+
+	<node name="PFD" pkg="unity_simulation_scene" type="joy_sub_ensta.py" output="screen"/>
+
+</launch>
