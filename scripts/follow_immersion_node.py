@@ -69,15 +69,23 @@ class ImmFollow():
         dive    = [0.5, 0.5, 0.5, 0, 1, 0]
         surface = [0.5, 0.5, 0.5, 1, 0, 1]
 
+        # Bangbang violent
+        #TODO remplacer par un PID
         cmd = []
         if target_pitch>0:
-            cmd = surface
-        elif target_pitch<0:
-            cmd = dive
+            if self.pitch<target_pitch:
+              cmd = dive
+            else:
+              cmd = surface
+        elif target_pitch<0
+            if self.pitch>target_pitch:
+              cmd = dive
+            else:
+              cmd = surface
         else:
             cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        gain = np.abs(2*target_pitch/np.pi)
+        gain = np.abs(2*(target_pitch)/np.pi)
         rospy.loginfo('gain : {}'.format(gain))
         self.cmd.data = (gain*np.array(cmd)).tolist()
 
