@@ -72,13 +72,14 @@ class ImmFollow():
         cmd = []
         if target_pitch>0:
             cmd = surface
-        elif target_pitch<0:
+        elif target_pitch<0: 
             cmd = dive
         else:
             cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
         gain = np.abs(2*target_pitch/np.pi)
-        rospy.loginfo('gain : {}'.format(gain))
+        gain_display= gain*(180*np.pi/np.pi)
+        rospy.loginfo('gain : {}'.format(gain_display))
         self.cmd.data = (gain*np.array(cmd)).tolist()
 
 if __name__ == '__main__':
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     algo = ImmFollow()
 
     pub_wrench = rospy.Publisher("cmd_mot", Float32MultiArray, queue_size=1)
-    sub_pose = rospy.Subscriber("pose", PoseStamped, algo.updatePose)
+    sub_pose = rospy.Subscriber("test", PoseStamped, algo.updatePose)
     sub_target = rospy.Subscriber("imm_target", Float32, algo.updateTarget)
     sub_enable = rospy.Subscriber("enable", Bool, algo.switch)
 
