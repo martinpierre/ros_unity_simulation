@@ -1,12 +1,11 @@
 <launch>
 
-	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+	<!-- <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
 		<param name="port" value="9090"/>
 	</include>
+	<node name="file_server" pkg="file_server" type="file_server" output="screen"/> -->
 
-	<node name="file_server" pkg="file_server" type="file_server" output="screen"/>
-
-	<node name="PFD" pkg="unity_simulation_scene" type="follow_immersion_node.py" output="screen"/>
-	<node name="Algo" pkg="unity_simulation_scene" type="simu_wrench_pub.py" output="screen"/>
+	<node name="Algo" pkg="unity_simulation_scene" type="follow_immersion_node.py" output="screen"/>
+	<node name="PFD" pkg="unity_simulation_scene" type="simu_wrench_pub.py" output="screen"/>
 
 </launch>

@@ -19,10 +19,10 @@ class ImmFollow():
 
         self.target = 0.0
         self.cmd = Float32MultiArray()
-        self.cmd.layout.append(MultiArrayDimension())
-        self.cmd.layout.dim[0].label = "force"
-        self.cmd.layout.dim[0].size = 6
-        self.cmd.layout.dim[0].stride = 6
+        # self.cmd.layout.append(MultiArrayDimension())
+        # self.cmd.layout.dim[0].label = "force"
+        # self.cmd.layout.dim[0].size = 6
+        # self.cmd.layout.dim[0].stride = 6
         self.cmd.data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def switch(self, msg):
@@ -42,14 +42,15 @@ class ImmFollow():
         euler = tf.transformations.euler_from_quaternion(quaternion)
         self.pitch = euler[1]
 
-        # compute command
-        self.compute_cmd()
+        if self.enable:
+            # compute command
+            self.compute_cmd()
 
-        # publish command
-        pub_wrench.publish(self.cmd)
+            # publish command
+            pub_wrench.publish(self.cmd)
 
     def compute_wanted_pitch(self):
-        dist_react = 2.0
+        dist_react = 10.0
         e = (self.z - self.target)/2.0
         target_pitch = np.arctan(e)
 
@@ -76,7 +77,9 @@ class ImmFollow():
         else:
             cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        self.cmd.data = (target_pitch/90.0*np.array(cmd)).tolist()
+        gain = np.abs(2*target_pitch/np.pi)
+        rospy.loginfo('gain : {}'.format(gain))
+        self.cmd.data = (gain*np.array(cmd)).tolist()
 
 if __name__ == '__main__':
     rospy.init_node('follow_immersion_algo')
