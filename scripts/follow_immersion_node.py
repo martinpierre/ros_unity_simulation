@@ -94,7 +94,24 @@ class ImmFollow():
             cmd = [0, 0, 0, 0.0, 0.0, 0.0]
             
 
+        '''
+        dive    = [0.5, 0.5, 0.5, 0, 1, 0]
+        surface = [0.5, 0.5, 0.5, 1, 0, 1]
+        
+        # gere un gain en fonction de l'erreur d'assiette
+        rel_target_pitch = self.pitch - target_pitch
+        target_gain = np.arctan(rel_target_pitch*2.0)
+        
+        # Applique le gain a la commande
+        dive_cmd = max(np.sign(-rel_target_pitch), 0)*target_gain
+        surface_cmd = max(np.sign(rel_target_pitch), 0)*target_gain
+        cmd = [0.5, 0.5, 0.5, 
+               surface_cmd, dive_cmd, surface_cmd]
+        '''
+        # gere un gain en fonction de l'assiette nulle
+
         gain = np.abs(2*(target_pitch)/np.pi)
+        
         rospy.loginfo('gain : {}'.format(gain))
         self.cmd.data = (gain*np.array(cmd)).tolist()
 
