@@ -53,19 +53,48 @@ class ImmFollow():
         dist_react = 10.0
         e = (self.z - self.target)/2.0
         target_pitch = np.arctan(e)
-
+        print(e)
         return target_pitch
 
     def compute_cmd(self):
         target_pitch = self.compute_wanted_pitch()
-
-        rospy.loginfo('target pitch : {}'.format(target_pitch))
+        pitch_display = target_pitch * 180/(np.pi)
+        rospy.loginfo('target pitch : {}'.format(pitch_display))
 
         # Test up/down
         # up   = [-1,  0.5,  0.5, 0.0, 1.0, 0.0]  # dec z
         # down = [ 1, -0.5, -0.5, 0.5, 0.0, 0.5]  # inc z
 
         # Test dive/surface
+        dive    = [1, 1, 1, 0, 0.5, 0]
+        surface = [1, 1, 1, 0.5, 0, 0.5]
+
+        # Bangbang violent
+        #TODO remplacer par un PID
+        cmd = []
+        if target_pitch>0:
+            if self.pitch<target_pitch:
+              cmd = surface
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi))          
+            else:
+              cmd = dive
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi))
+        elif target_pitch<0:
+            if self.pitch>target_pitch:
+              cmd = dive
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi)) 
+            else:
+              cmd = surface
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi))
+        else:
+            cmd = [0, 0, 0, 0.0, 0.0, 0.0]
+            
+
+        '''
         dive    = [0.5, 0.5, 0.5, 0, 1, 0]
         surface = [0.5, 0.5, 0.5, 1, 0, 1]
 
@@ -78,8 +107,9 @@ class ImmFollow():
         surface_cmd = max(np.sign(rel_target_pitch), 0)*target_gain
         cmd = [0.5, 0.5, 0.5,
                surface_cmd, dive_cmd, surface_cmd]
-
+        '''
         # gere un gain en fonction de l'assiette nulle
+
         gain = np.abs(2*(target_pitch)/np.pi)
 
         rospy.loginfo('gain : {}'.format(gain))

@@ -64,4 +64,4 @@ if __name__ == '__main__':
     sub_mot = rospy.Subscriber("cmd_mot", Float32MultiArray, translator.updateCmd)
     pub = rospy.Publisher("wrench", WrenchStamped, queue_size=1)
 
-    rospy.spin()
+rospy.spin()
