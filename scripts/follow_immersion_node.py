@@ -53,49 +53,46 @@ class ImmFollow():
         dist_react = 10.0
         e = (self.z - self.target)/2.0
         target_pitch = np.arctan(e)
-
+        print(e)
         return target_pitch
 
     def compute_cmd(self):
         target_pitch = self.compute_wanted_pitch()
-
-        rospy.loginfo('target pitch : {}'.format(target_pitch))
+        pitch_display = target_pitch * 180/(np.pi)
+        rospy.loginfo('target pitch : {}'.format(pitch_display))
 
         # Test up/down
         # up   = [-1,  0.5,  0.5, 0.0, 1.0, 0.0]  # dec z
         # down = [ 1, -0.5, -0.5, 0.5, 0.0, 0.5]  # inc z
 
         # Test dive/surface
-        dive    = [0.5, 0.5, 0.5, 0, 1, 0]
-        surface = [0.5, 0.5, 0.5, 1, 0, 1]
+        dive    = [1, 1, 1, 0, 0.5, 0]
+        surface = [1, 1, 1, 0.5, 0, 0.5]
 
         # Bangbang violent
         #TODO remplacer par un PID
         cmd = []
         if target_pitch>0:
-        '''    
-<<<<<<< HEAD
-            cmd = surface
-        elif target_pitch<0: 
-            cmd = dive
-        else:
-            cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-        gain = np.abs(2*target_pitch/np.pi)
-        gain_display= gain*(180*np.pi/np.pi)
-        rospy.loginfo('gain : {}'.format(gain_display))
-======='''
             if self.pitch<target_pitch:
-              cmd = dive
-            else:
               cmd = surface
-        elif target_pitch<0
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi))          
+            else:
+              cmd = dive
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi))
+        elif target_pitch<0:
             if self.pitch>target_pitch:
               cmd = dive
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi)) 
             else:
               cmd = surface
+              rospy.loginfo("Pitch")
+              rospy.loginfo(self.pitch*180/(np.pi))
         else:
-            cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            cmd = [0, 0, 0, 0.0, 0.0, 0.0]
+            
 
         gain = np.abs(2*(target_pitch)/np.pi)
         rospy.loginfo('gain : {}'.format(gain))
@@ -107,7 +104,7 @@ if __name__ == '__main__':
     algo = ImmFollow()
 
     pub_wrench = rospy.Publisher("cmd_mot", Float32MultiArray, queue_size=1)
-    sub_pose = rospy.Subscriber("test", PoseStamped, algo.updatePose)
+    sub_pose = rospy.Subscriber("real_pose", PoseStamped, algo.updatePose)
     sub_target = rospy.Subscriber("imm_target", Float32, algo.updateTarget)
     sub_enable = rospy.Subscriber("enable", Bool, algo.switch)
 
