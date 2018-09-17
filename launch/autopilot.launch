@@ -1,0 +1,52 @@
+<launch>
+
+  <node name="autopilot" pkg="unity_simulation_scene" type="autopilot.py"/>
+  <node name="separator" pkg="unity_simulation_scene" type="separator.py"/>
+  <node name="guidance" pkg="unity_simulation_scene" type="guidance.py" output="screen"/>
+  <node name="PFD" pkg="unity_simulation_scene" type="simu_wrench_pub.py"/>
+
+  <group ns="pid_vel">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0" />
+      <param name="Ki" value="0.2" />
+      <param name="Kd" value="0.1" />
+      <param name="cutoff_frequency" value="10.0" />
+      <param name="upper_limit" value="1" />
+      <param name="lower_limit" value="-1" />
+      <param name="windup_limit" value="2" />
+      <param name="max_loop_frequency" value="50.0" />
+      <param name="min_loop_frequency" value="50.0" />
+    </node>
+  </group>
+  <group ns="pid_pitch">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="angle_error" value="True"/>
+      <param name="Kp" value="5.0" />
+      <param name="Ki" value="0.1" />
+      <param name="Kd" value="0.0" />
+      <param name="cutoff_frequency" value="5.0" />
+      <param name="upper_limit" value="1" />
+      <param name="lower_limit" value="-1" />
+      <param name="windup_limit" value="1000" />
+      <param name="max_loop_frequency" value="50.0" />
+      <param name="min_loop_frequency" value="50.0" />
+    </node>
+  </group>
+  <group ns="pid_yaw">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="angle_error" value="True"/>
+      <param name="Kp" value="1.0" />
+      <param name="Ki" value="0.1" />
+      <param name="Kd" value="0.0" />
+      <param name="cutoff_frequency" value="10.0" />
+      <param name="upper_limit" value="1" />
+      <param name="lower_limit" value="-1" />
+      <param name="windup_limit" value="2" />
+      <param name="max_loop_frequency" value="50.0" />
+      <param name="min_loop_frequency" value="50.0" />
+    </node>
+  </group>
+
+  <node name="path_pub" pkg="unity_simulation_scene" type="simu_path_pub.py" output="screen"/>
+
+</launch>
