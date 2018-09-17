@@ -132,6 +132,8 @@ class Guide():
         else:
             rospy.loginfo("First wp, switching to follow_wp")
             self.follow_wp()
+            # wp_init = Pose()
+            # wp_fin = self.path[self.wp_nb]
             return
 
         # Si le bateau dépasse la ligne
@@ -140,55 +142,77 @@ class Guide():
             self.follow_wp()
             return
 
-        wantedHead = self.follow_line_plane(wp_init, wp_fin, 'xy')
-        # wantedPitch = self.follow_line_plane(wp_init, wp_fin, 'xz')
-        wantedPitch = 0.0
+        wantedHead = self.follow_line_yaw(wp_init, wp_fin)
+        wantedPitch = self.follow_line_pitch(wp_init, wp_fin)
+        # wantedHead = 0.0
         wantedVel = self.compute_vel(wantedHead, wantedPitch)
 
+        self.cmd.x = wantedVel
+        self.cmd.y = wantedPitch
+        self.cmd.z = wantedHead
 
-    def follow_line_plane(self, wp_init, wp_fin, plane):
+    def follow_line_pitch(self, wp_init, wp_fin):
 
         # Redefinition des entrees
-        if plane == 'xy':
-            ax = wp_init.position.x
-            ay = wp_init.position.y
-            bx = wp_fin.position.x
-            by = wp_fin.position.y
-        elif plane == 'xz':
-            ax = wp_init.position.x
-            ay = wp_init.position.z
-            bx = wp_fin.position.x
-            by = wp_fin.position.z
-        else:
-            rospy.logerr("[FollowLine] Plane not found, exiting follow")
-            return
+        z0 = wp_init.position.z
+        z1 = wp_fin.position.z
+        theta = self.pitch
         pos = self.pose.position
-        rospy.loginfo("ax = [{}]".format(ax))
-        rospy.loginfo("ay = [{}]".format(ay))
-        rospy.loginfo("bx = [{}]".format(bx))
-        rospy.loginfo("by = [{}]".format(by))
 
-        headLine = -np.arctan2(by - ay, bx - ax) # ENU convention, angle from east
-        rospy.loginfo("headLine = [{}]".format(headLine))
+        dist_wp = ((wp_fin.position.x - wp_init.position.x)**2 + (wp_fin.position.y - wp_init.position.y)**2)**0.5
+        progression = self.dist_gnd/dist_wp
+        obj_depth = (progression*z1 + (1-progression)*z0)
+        signed_error = pos.z - obj_depth
+
+        # Calcul de l'erreur
+        distAtanPt = 1
+        wantedAngle = np.arctan(signed_error / distAtanPt)
+        # rospy.loginfo("theta = [{}]".format(theta))
+        # rospy.loginfo("headLine = [{}]".format(headLine))
+        # rospy.loginfo("err = [{}]".format(err))
+        # rospy.loginfo("headLine - err = [{}]".format( headLine - err))
+
+        rospy.loginfo("wantedAngle = [{}]".format(wantedAngle)) # Le cap voulu par rapport au repere global
+
+        return wantedAngle
+
+    def follow_line_yaw(self, wp_init, wp_fin):
+
+        # Redefinition des entrees
+        ax = wp_init.position.x
+        ay = wp_init.position.y
+        bx = wp_fin.position.x
+        by = wp_fin.position.y
+        theta = self.yaw
+        pos = self.pose.position
+
+        # rospy.loginfo("ax, ay = [{}, {}]".format(ax, ay))
+        # rospy.loginfo("bx, by = [{}, {}]".format(bx, by))
+        # rospy.loginfo("x, y = [{}, {}]".format(pos.x, pos.y), )
+
+        headLine = -np.arctan2(by - ay, bx - ax)  # ENU convention, angle from north
+        # rospy.loginfo("headLine = [{}]".format(headLine))
 
         # Calcul de la distance à la ligne, si c'est un point alors une valeur est définie
         if np.sqrt( (bx-ax)**2 + (by-ay)**2 ) != 0:
             dist2Line = ((bx-ax)*(pos.y-ay) - (by-ay)*(pos.x-ax)) / np.sqrt( (bx-ax)**2 + (by-ay)**2)
         else:
             dist2Line = 100
-        rospy.loginfo("dist2Line = [{}]".format(dist2Line))
+        # rospy.loginfo("dist2Line = [{}]".format(dist2Line))
 
         # Calcul de l'erreur
-        distAtanPt = 3
-        err = -np.arctan(dist2Line / distAtanPt)
-        rospy.loginfo("self.yaw = [{}]".format(self.yaw))
-        rospy.loginfo("headLine = [{}]".format(headLine))
-        rospy.loginfo("err = [{}]".format(err))
-        rospy.loginfo("headLine - err = [{}]".format( headLine - err))
+        distAtanPt = 10
+        err = np.arctan(dist2Line / distAtanPt)
+        # rospy.loginfo("theta = [{}]".format(theta))
+        # rospy.loginfo("headLine = [{}]".format(headLine))
+        # rospy.loginfo("err = [{}]".format(err))
+        # rospy.loginfo("headLine - err = [{}]".format( headLine - err))
 
         # Bornage entre -pi et pi
-        wantedAngle = angle_rad(headLine,- err)
-        rospy.loginfo("wantedAngle = [{}]".format( wantedAngle)) # Le cap voulu par rapport au repere global
+        wantedAngle = angle_rad(headLine, err)  # locally
+        # wantedAngle = err  # globally
+
+        # rospy.loginfo("wantedAngle = [{}]".format( wantedAngle)) # Le cap voulu par rapport au repere global
 
         return wantedAngle
 
